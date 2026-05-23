@@ -1,0 +1,35 @@
+import { Assignment, GeneratedPaper, CreateAssignmentForm } from "@/types";
+
+const BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+
+async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
+  const res = await fetch(`${BASE}${path}`, {
+    headers: { "Content-Type": "application/json" },
+    ...init,
+  });
+  const json = await res.json();
+  if (!json.success) throw new Error(json.error || "Request failed");
+  return json.data as T;
+}
+
+export const api = {
+  assignments: {
+    list: () => apiFetch<Assignment[]>("/api/assignments"),
+    get: (id: string) => apiFetch<Assignment>(`/api/assignments/${id}`),
+    create: (data: CreateAssignmentForm) =>
+      apiFetch<Assignment>("/api/assignments", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    delete: (id: string) =>
+      apiFetch<void>(`/api/assignments/${id}`, { method: "DELETE" }),
+  },
+  papers: {
+    getByAssignment: (assignmentId: string) =>
+      apiFetch<GeneratedPaper>(`/api/papers/by-assignment/${assignmentId}`),
+    regenerate: (assignmentId: string) =>
+      apiFetch<void>(`/api/papers/regenerate/${assignmentId}`, {
+        method: "POST",
+      }),
+  },
+};

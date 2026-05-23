@@ -1,0 +1,328 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Mono:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --ink: #0f0f14;
+  --ink-soft: #1a1a24;
+  --ink-muted: #2d2d3d;
+  --surface: #f5f3ef;
+  --surface-warm: #ede9e1;
+  --surface-card: #ffffff;
+  --accent: #e8632a;
+  --accent-soft: #f2845a;
+  --accent-pale: #fdf0ea;
+  --gold: #c9a84c;
+  --gold-pale: #faf5e8;
+  --mint: #2e7d6b;
+  --mint-pale: #e8f5f1;
+  --slate: #4a5568;
+  --slate-light: #718096;
+  --border: #e2ddd4;
+  --border-strong: #c8c0b0;
+
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-body: 'DM Sans', system-ui, sans-serif;
+  --font-mono: 'DM Mono', 'Courier New', monospace;
+
+  --shadow-sm: 0 1px 3px rgba(15, 15, 20, 0.06), 0 1px 2px rgba(15, 15, 20, 0.04);
+  --shadow-md: 0 4px 12px rgba(15, 15, 20, 0.08), 0 2px 4px rgba(15, 15, 20, 0.05);
+  --shadow-lg: 0 12px 40px rgba(15, 15, 20, 0.12), 0 4px 12px rgba(15, 15, 20, 0.06);
+  --shadow-xl: 0 24px 64px rgba(15, 15, 20, 0.16), 0 8px 24px rgba(15, 15, 20, 0.08);
+}
+
+* { box-sizing: border-box; }
+
+html {
+  font-family: var(--font-body);
+  background: var(--surface);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100dvh;
+  background: var(--surface);
+}
+
+/* ── Typography ── */
+.font-display { font-family: var(--font-display); }
+.font-mono { font-family: var(--font-mono); }
+
+/* ── Sidebar ── */
+.sidebar {
+  background: var(--ink);
+  width: 260px;
+  min-height: 100dvh;
+  position: fixed;
+  left: 0; top: 0;
+  display: flex;
+  flex-direction: column;
+  z-index: 40;
+}
+
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  color: rgba(255,255,255,0.55);
+  font-size: 14px;
+  font-weight: 400;
+  transition: all 0.15s ease;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.sidebar-link:hover {
+  color: rgba(255,255,255,0.9);
+  background: rgba(255,255,255,0.06);
+}
+
+.sidebar-link.active {
+  color: #fff;
+  background: rgba(232, 99, 42, 0.18);
+  font-weight: 500;
+}
+
+.sidebar-link.active svg { color: var(--accent); }
+
+/* ── Main layout ── */
+.main-content {
+  margin-left: 260px;
+  min-height: 100dvh;
+  background: var(--surface);
+}
+
+/* ── Cards ── */
+.card {
+  background: var(--surface-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: var(--shadow-sm);
+}
+
+.card-hover {
+  transition: box-shadow 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+}
+.card-hover:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+  border-color: var(--border-strong);
+}
+
+/* ── Buttons ── */
+.btn-primary {
+  background: var(--ink);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: var(--font-body);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.15s ease;
+  box-shadow: 0 1px 3px rgba(15,15,20,0.2);
+}
+.btn-primary:hover {
+  background: var(--ink-soft);
+  box-shadow: 0 4px 12px rgba(15,15,20,0.25);
+  transform: translateY(-1px);
+}
+.btn-primary:active { transform: none; }
+
+.btn-accent {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: var(--font-body);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.15s ease;
+}
+.btn-accent:hover {
+  background: #d4572a;
+  box-shadow: 0 4px 16px rgba(232, 99, 42, 0.35);
+  transform: translateY(-1px);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--slate);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 9px 18px;
+  font-size: 14px;
+  font-weight: 400;
+  font-family: var(--font-body);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.15s ease;
+}
+.btn-ghost:hover {
+  background: var(--surface-warm);
+  border-color: var(--border-strong);
+  color: var(--ink);
+}
+
+/* ── Inputs ── */
+.input {
+  width: 100%;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 14px;
+  font-family: var(--font-body);
+  color: var(--ink);
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(232, 99, 42, 0.1);
+  background: #fff;
+}
+.input::placeholder { color: var(--slate-light); }
+.input-error { border-color: #e53e3e; }
+.input-error:focus { box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.1); }
+
+/* ── Difficulty badges ── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.badge-easy { background: #e8f5e9; color: #2e7d32; }
+.badge-moderate { background: #fff8e1; color: #f57f17; }
+.badge-hard { background: #fce4ec; color: #c62828; }
+.badge-challenging {
+  background: linear-gradient(135deg, #f3e5f5, #e8eaf6);
+  color: #4527a0;
+}
+
+/* ── Progress bar ── */
+.progress-track {
+  background: var(--border);
+  border-radius: 100px;
+  height: 6px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  border-radius: 100px;
+  background: linear-gradient(90deg, var(--accent) 0%, var(--accent-soft) 100%);
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── Animations ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-fade-up { animation: fadeUp 0.4s ease forwards; }
+.animate-fade-in { animation: fadeIn 0.3s ease forwards; }
+.animate-pulse-soft { animation: pulse-soft 2s ease-in-out infinite; }
+
+.skeleton {
+  background: linear-gradient(90deg, var(--border) 25%, var(--surface-warm) 50%, var(--border) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 6px;
+}
+
+/* ── Empty state ── */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 40px;
+  text-align: center;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 100px; }
+::-webkit-scrollbar-thumb:hover { background: var(--slate-light); }
+
+/* ── Mobile ── */
+@media (max-width: 768px) {
+  .sidebar { transform: translateX(-100%); transition: transform 0.3s ease; }
+  .sidebar.open { transform: translateX(0); }
+  .main-content { margin-left: 0; }
+}
+
+/* ── Exam paper specific ── */
+.exam-paper {
+  font-family: 'Times New Roman', Times, serif;
+  background: #fff;
+  color: #1a1a1a;
+  line-height: 1.7;
+}
+
+.exam-paper .paper-header {
+  border-bottom: 3px double #1a1a1a;
+  padding-bottom: 16px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.exam-paper .question-number {
+  font-weight: 700;
+  min-width: 28px;
+  flex-shrink: 0;
+}
+
+/* ── Step indicator ── */
+.step-dot {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 600;
+  transition: all 0.2s ease;
+}
+.step-dot.done { background: var(--ink); color: #fff; }
+.step-dot.active { background: var(--accent); color: #fff; }
+.step-dot.pending { background: var(--border); color: var(--slate-light); }
