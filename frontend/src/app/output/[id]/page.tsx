@@ -115,14 +115,14 @@ function PaperView({ paper, assignment }: { paper: GeneratedPaper; assignment: A
         background: "#fff", borderBottom: "1px solid var(--border)",
         padding: "12px 32px", display: "flex", alignItems: "center", gap: 12,
         position: "sticky", top: 0, zIndex: 30,
-      }} className="no-print">
+      }} className="no-print output-action-bar">
         <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 12 }}>
           <span style={{
             background: "var(--mint-pale)", color: "var(--mint)",
             fontSize: 12, fontWeight: 600, padding: "3px 12px", borderRadius: 100,
             display: "flex", alignItems: "center", gap: 5,
           }}>
-            <CheckCircle2 size={12} /> Generated v{paper.version}
+            <CheckCircle2 size={12} /> <span className="version-label">Generated </span>v{paper.version}
           </span>
           <span style={{ fontSize: 13, color: "var(--slate-light)" }}>
             {paper.sections.reduce((s, sec) => s + sec.questions.length, 0)} questions · {paper.maximumMarks} marks
@@ -156,7 +156,7 @@ function PaperView({ paper, assignment }: { paper: GeneratedPaper; assignment: A
       </div>
 
       {/* Student info strip */}
-      <div className="no-print" style={{ background: "var(--surface-warm)", borderBottom: "1px solid var(--border)", padding: "12px 32px" }}>
+      <div className="no-print output-student-strip" style={{ background: "var(--surface-warm)", borderBottom: "1px solid var(--border)", padding: "12px 32px" }}>
         <div style={{ maxWidth: 900, margin: "0 auto", display: "flex", gap: 16, alignItems: "center", flexWrap: "wrap" }}>
           <span style={{ fontSize: 12, fontWeight: 600, color: "var(--slate)", minWidth: "fit-content" }}>Preview as:</span>
           {[
@@ -182,10 +182,10 @@ function PaperView({ paper, assignment }: { paper: GeneratedPaper; assignment: A
       </div>
 
       {/* ── The Exam Paper ── */}
-      <div style={{ padding: "32px 32px 64px", background: "var(--surface)" }}>
+      <div className="output-paper-wrap" style={{ padding: "32px 32px 64px", background: "var(--surface)" }}>
         <div
           ref={paperRef}
-          className="exam-paper"
+          className="exam-paper output-paper"
           style={{
             maxWidth: 860, margin: "0 auto",
             background: "#fff",
@@ -259,13 +259,13 @@ function PaperView({ paper, assignment }: { paper: GeneratedPaper; assignment: A
                 {/* Questions */}
                 {section.questions.map((question, qi) => (
                   <div key={question._id || qi} style={{ marginBottom: 20 }}>
-                    <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+                    <div className="output-question-row" style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
                       <span className="question-number" style={{ fontSize: 13 }}>
                         {question.number}.
                       </span>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
-                          <p style={{ fontSize: 13, lineHeight: 1.65, flex: 1 }}>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div className="output-question-meta" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
+                          <p style={{ fontSize: 13, lineHeight: 1.65, flex: 1, margin: 0 }}>
                             {question.text}
                           </p>
                           {question.imageUrl && (
@@ -282,7 +282,7 @@ function PaperView({ paper, assignment }: { paper: GeneratedPaper; assignment: A
                               ⏳ Generating diagram…
                             </div>
                           )}
-                          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4, flexShrink: 0 }}>
+                          <div className="output-marks-badge" style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4, flexShrink: 0 }}>
                             <span style={{ fontSize: 12, fontWeight: 600, whiteSpace: "nowrap" }}>
                               [{question.marks} {question.marks === 1 ? "Mark" : "Marks"}]
                             </span>
@@ -327,16 +327,7 @@ function PaperView({ paper, assignment }: { paper: GeneratedPaper; assignment: A
         </div>
       </div>
 
-      <style>{`
-        @media print {
-          .no-print { display: none !important; }
-          .sidebar { display: none !important; }
-          .main-content { margin-left: 0 !important; }
-          body { background: #fff !important; }
-          #exam-paper-print { box-shadow: none !important; border-radius: 0 !important; max-width: 100% !important; }
-        }
-        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-      `}</style>
+
     </div>
   );
 }
@@ -436,8 +427,6 @@ export default function OutputPage() {
           </button>
         </div>
       )}
-
-      <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 }

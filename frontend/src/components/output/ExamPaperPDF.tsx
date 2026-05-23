@@ -143,7 +143,8 @@ export function DownloadPDFButton({ paper }: { paper: GeneratedPaper }) {
     >
       {({ loading, error }: { loading: boolean; error?: Error | null }) => (
         <button className="btn-primary" disabled={loading}>
-          {loading ? "Preparing PDF…" : error ? "PDF Error" : "⬇ Download PDF"}
+          <span aria-hidden="true">⬇</span>
+          <span className="download-pdf-label">{loading ? "Preparing PDF…" : error ? "PDF Error" : "Download PDF"}</span>
         </button>
       )}
     </PDFDownloadLink>

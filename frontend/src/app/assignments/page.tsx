@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import {
   Plus, Search, Filter, MoreVertical, Eye, Trash2,
   FileText, Clock, Calendar, CheckCircle2, Loader2, XCircle,
-  BookOpen, Zap,
+  BookOpen, Zap, ArrowLeft, ClipboardList, Menu,
 } from "lucide-react";
 import { useAssignmentStore } from "@/store/assignmentStore";
 import { api } from "@/lib/api";
@@ -133,6 +133,7 @@ function AssignmentCard({ assignment, onDelete }: { assignment: Assignment; onDe
 export default function AssignmentsPage() {
   const { assignments, setAssignments, removeAssignment, isLoading, setLoading } = useAssignmentStore();
   const [search, setSearch] = useState("");
+  const pageRouter = useRouter();
 
   useEffect(() => {
     setLoading(true);
@@ -155,30 +156,60 @@ export default function AssignmentsPage() {
 
   return (
     <div style={{ minHeight: "100dvh", background: "var(--surface)" }}>
-      {/* Header */}
-      <div style={{
-        background: "#fff", borderBottom: "1px solid var(--border)",
-        padding: "20px 32px", display: "flex", alignItems: "center",
-        justifyContent: "space-between", gap: 16,
-        position: "sticky", top: 0, zIndex: 30,
+      {/* Floating Header with Back Arrow and Current Selection */}
+      <div className="floating-page-header" style={{
+        position: "fixed", top: 0, left: 260, right: 0,
+        background: "rgba(255, 255, 255, 0.8)",
+        backdropFilter: "blur(12px)",
+        WebkitBackdropFilter: "blur(12px)",
+        borderBottom: "1px solid rgba(0, 0, 0, 0.08)",
+        padding: "12px 32px", display: "flex", alignItems: "center",
+        margin : "8px 12px", borderRadius: 12,
+        gap: 16, zIndex: 40, height: 60,
       }}>
-        <div>
-          <p style={{ fontSize: 12, color: "var(--slate-light)", marginBottom: 2 }}>
-            Manage and review assignments for your classes.
-          </p>
-          <h1 style={{ fontSize: 22, fontWeight: 700, color: "var(--ink)", fontFamily: "var(--font-display)" }}>
-            Assignments
-          </h1>
+        <button
+          type="button"
+          onClick={() => pageRouter.back()}
+          style={{
+            background: "none", border: "none", cursor: "pointer",
+            padding: "8px", display: "flex", alignItems: "center", justifyContent: "center",
+            color: "var(--ink)",
+          }}
+        >
+          <ArrowLeft size={20} />
+        </button>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, color: "var(--ink)", fontSize: 14, fontWeight: 500 }}>
+          <ClipboardList size={16} />
+          Assignments
         </div>
-        <Link href="/create">
-          <button className="btn-primary">
-            <Plus size={16} />
-            Create Assignment
-          </button>
-        </Link>
+        <button
+          type="button"
+          className="mobile-drawer-trigger"
+          onClick={() => window.dispatchEvent(new Event("vedaai-open-sidebar"))}
+          style={{
+            marginLeft: "auto", width: 36, height: 36, borderRadius: 10, border: "1px solid var(--border)",
+            background: "#fff", display: "none", alignItems: "center", justifyContent: "center",
+            cursor: "pointer", color: "var(--ink)",
+          }}
+          aria-label="Open navigation menu"
+        >
+          <Menu size={18} />
+        </button>
       </div>
 
-      <div style={{ padding: "28px 32px", maxWidth: 960, margin: "0 auto" }}>
+      {/* Header Content (below floating header) */}
+      <div style={{
+        background: "var(--surface)", padding: "80px 32px 20px", maxWidth: 1200, margin: "0 auto",
+      }}>
+        <p style={{ fontSize: 12, color: "var(--slate-light)", marginBottom: 2 }}>
+          Manage and review assignments for your classes.
+        </p>
+        <h1 style={{ fontSize: 22, fontWeight: 700, color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+          Assignments 
+        </h1>
+      </div>
+
+      <div style={{ padding: "0px 32px 40px", maxWidth: 1200, margin: "0 auto" }}>
         {/* Search + Filter */}
         <div style={{ display: "flex", gap: 12, marginBottom: 24 }}>
           <div style={{ position: "relative", flex: 1 }}>
@@ -238,9 +269,13 @@ export default function AssignmentsPage() {
           </div>
         )}
 
-        {/* Assignments grid */}
+        {/* Assignments grid - 2 columns on desktop, 1 on mobile */}
         {!isLoading && filtered.length > 0 && (
-          <div style={{ display: "grid", gap: 12 }}>
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: window.innerWidth < 768 ? "1fr" : "repeat(2, 1fr)",
+            gap: 16
+          }}>
             {filtered.map((a, i) => (
               <div key={a._id} className="animate-fade-up" style={{ animationDelay: `${i * 0.04}s` }}>
                 <AssignmentCard assignment={a} onDelete={handleDelete} />
@@ -250,19 +285,31 @@ export default function AssignmentsPage() {
         )}
 
         {/* Note callout */}
-        {!isLoading && (
+        {/* {!isLoading && (
           <div style={{
             marginTop: 32, padding: "16px 20px",
             background: "var(--gold-pale)", border: "1px solid #e8d8a0",
             borderRadius: 12, display: "flex", alignItems: "flex-start", gap: 12,
           }}>
             <Zap size={16} style={{ color: "var(--gold)", flexShrink: 0, marginTop: 1 }} />
-            <p style={{ fontSize: 13, color: "#7d6520", lineHeight: 1.6 }}>
+            {/* <p style={{ fontSize: 13, color: "#7d6520", lineHeight: 1.6 }}>
               <strong>Note:</strong> Created assignments will appear here. Click any completed assignment to view the generated question paper, download as PDF, or regenerate.
-            </p>
+            </p> 
           </div>
-        )}
+         */}
       </div>
+
+      {/* Floating Create Button - Show only if there are existing assignments */}
+      {filtered.length > 0 && (
+        <div style={{ position: "fixed", bottom: 32, left: "calc(130px + 50%)", transform: "translateX(-50%)", zIndex: 35 }}>
+          <Link href="/create">
+            <button className="btn-primary floating-create-btn" style={{ display: "flex", alignItems: "center", gap: 8, padding: "12px 24px" }}>
+              <Plus size={18} />
+              <span className="create-text">Create Assignment</span>
+            </button>
+          </Link>
+        </div>
+      )}
     </div>
   );
 }

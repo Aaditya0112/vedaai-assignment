@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, useFieldArray } from "react-hook-form";
 import {
@@ -80,7 +80,31 @@ export default function CreatePage() {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [limitInfo, setLimitInfo] = useState<{
+    current: number;
+    max: number;
+    isAtLimit: boolean;
+    isApproachingLimit: boolean;
+    remaining: number;
+  } | null>(null);
   const { addAssignment } = useAssignmentStore();
+
+  // Fetch assignment limit info on mount
+  useEffect(() => {
+    const fetchLimitInfo = async () => {
+      try {
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+        const response = await fetch(`${baseUrl}/api/assignments/limit/status`);
+        const result = await response.json();
+        if (result.success) {
+          setLimitInfo(result.data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch limit info:", err);
+      }
+    };
+    fetchLimitInfo();
+  }, []);
 
   const {
     register,
@@ -131,9 +155,13 @@ export default function CreatePage() {
       addAssignment(assignment);
       // toast.dismiss(toastId);
       router.push(`/output/${assignment._id}`);
-    } catch (err) {
+    } catch (err: any) {
       // toast.dismiss(toastId);
-      toast.error("Failed to create assignment. Please try again.");
+      if (err.status === 400 && err.data?.code === "LIMIT_EXCEEDED") {
+        toast.error(`Assignment limit reached (${err.data.max} max)`);
+      } else {
+        toast.error(err.message || "Failed to create assignment. Please try again.");
+      }
       setIsSubmitting(false);
     }
   };
@@ -336,7 +364,8 @@ export default function CreatePage() {
 
                 {/* Column headers */}
                 <div style={{
-                  display: "grid", gridTemplateColumns: "1fr 140px 140px 40px",
+                  display: window.innerWidth < 768 ? "none" : "grid",
+                  gridTemplateColumns: "1fr 140px 140px 40px",
                   gap: 12, marginBottom: 10, padding: "0 4px",
                 }}>
                   <span style={{ fontSize: 11, fontWeight: 600, color: "var(--slate-light)", textTransform: "uppercase", letterSpacing: "0.06em" }}>Question Type</span>
@@ -347,86 +376,104 @@ export default function CreatePage() {
 
                 {fields.map((field, i) => (
                   <div key={field.id} style={{
-                    display: "grid", gridTemplateColumns: "1fr 140px 140px 40px",
-                    gap: 12, marginBottom: 10, alignItems: "center",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 12,
+                    marginBottom: 16,
+                    padding: window.innerWidth < 768 ? "12px" : "0",
+                    background: window.innerWidth < 768 ? "var(--surface-light)" : "transparent",
+                    borderRadius: window.innerWidth < 768 ? "8px" : "0",
+                    border: window.innerWidth < 768 ? "1px solid var(--border)" : "none",
                   }}>
-                    {/* Type selector */}
-                    <div style={{ position: "relative" }}>
-                      <select
-                        className="input"
-                        style={{ appearance: "none", paddingRight: 32, cursor: "pointer" }}
-                        {...register(`questionTypes.${i}.type` as const, { required: true })}
-                      >
-                        {QUESTION_TYPE_OPTIONS.map((t) => (
-                          <option key={t} value={t}>{t}</option>
-                        ))}
-                      </select>
-                      <ChevronDown size={14} style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", pointerEvents: "none", color: "var(--slate-light)" }} />
+                    {/* Type selector - full width */}
+                    <div>
+                      {window.innerWidth < 768 && <label style={{ fontSize: 12, fontWeight: 500, color: "var(--ink)", marginBottom: 6, display: "block" }}>Question Type</label>}
+                      <div style={{ position: "relative" }}>
+                        <select
+                          className="input"
+                          style={{ appearance: "none", paddingRight: 32, cursor: "pointer", width: "100%" }}
+                          {...register(`questionTypes.${i}.type` as const, { required: true })}
+                        >
+                          {QUESTION_TYPE_OPTIONS.map((t) => (
+                            <option key={t} value={t}>{t}</option>
+                          ))}
+                        </select>
+                        <ChevronDown size={14} style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", pointerEvents: "none", color: "var(--slate-light)" }} />
+                      </div>
                     </div>
 
-                    {/* Count with stepper */}
-                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                      <button type="button"
-                        onClick={() => {
-                          const currentValue = watchQTypes[i]?.count || 1;
-                          if (currentValue > 1) {
-                            setValue(`questionTypes.${i}.count`, currentValue - 1);
-                          }
-                        }}
-                        style={{ width: 28, height: 28, borderRadius: 6, border: "1px solid var(--border)", background: "var(--surface)", cursor: "pointer", flexShrink: 0, fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center" }}
-                      >−</button>
-                      <input
-                        id={`count-${i}`}
-                        type="number"
-                        className="input"
-                        style={{ textAlign: "center", padding: "8px 4px" }}
-                        {...register(`questionTypes.${i}.count` as const, {
-                          required: true, min: 1, valueAsNumber: true,
-                        })}
-                      />
-                      <button type="button"
-                        onClick={() => {
-                          const currentValue = watchQTypes[i]?.count || 1;
-                          setValue(`questionTypes.${i}.count`, currentValue + 1);
-                        }}
-                        style={{ width: 28, height: 28, borderRadius: 6, border: "1px solid var(--border)", background: "var(--surface)", cursor: "pointer", flexShrink: 0, fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center" }}
-                      >+</button>
+                    {/* Count and Marks on same row */}
+                    <div style={{ display: "grid", gridTemplateColumns: window.innerWidth < 768 ? "1fr 1fr" : "140px 140px", gap: 12, alignItems: window.innerWidth < 768 ? "flex-start" : "center" }}>
+                      {/* Count with stepper */}
+                      <div>
+                        {window.innerWidth < 768 && <label style={{ fontSize: 11, fontWeight: 500, color: "var(--ink)", marginBottom: 4, display: "block" }}>No. of Questions</label>}
+                        <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                          <button type="button"
+                            onClick={() => {
+                              const currentValue = watchQTypes[i]?.count || 1;
+                              if (currentValue > 1) {
+                                setValue(`questionTypes.${i}.count`, currentValue - 1);
+                              }
+                            }}
+                            style={{ width: 24, height: 24, borderRadius: 4, border: "1px solid var(--border)", background: "var(--surface)", cursor: "pointer", flexShrink: 0, fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center" }}
+                          >−</button>
+                          <input
+                            id={`count-${i}`}
+                            type="number"
+                            className="input"
+                            style={{ textAlign: "center", padding: "6px 4px", flex: 1 }}
+                            {...register(`questionTypes.${i}.count` as const, {
+                              required: true, min: 1, valueAsNumber: true,
+                            })}
+                          />
+                          <button type="button"
+                            onClick={() => {
+                              const currentValue = watchQTypes[i]?.count || 1;
+                              setValue(`questionTypes.${i}.count`, currentValue + 1);
+                            }}
+                            style={{ width: 24, height: 24, borderRadius: 4, border: "1px solid var(--border)", background: "var(--surface)", cursor: "pointer", flexShrink: 0, fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center" }}
+                          >+</button>
+                        </div>
+                      </div>
+
+                      {/* Marks stepper */}
+                      <div>
+                        {window.innerWidth < 768 && <label style={{ fontSize: 11, fontWeight: 500, color: "var(--ink)", marginBottom: 4, display: "block" }}>Marks</label>}
+                        <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                          <button type="button"
+                            onClick={() => {
+                              const currentValue = watchQTypes[i]?.marksPerQuestion || 1;
+                              if (currentValue > 1) {
+                                setValue(`questionTypes.${i}.marksPerQuestion`, currentValue - 1);
+                              }
+                            }}
+                            style={{ width: 24, height: 24, borderRadius: 4, border: "1px solid var(--border)", background: "var(--surface)", cursor: "pointer", flexShrink: 0, fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center" }}
+                          >−</button>
+                          <input
+                            id={`marks-${i}`}
+                            type="number"
+                            className="input"
+                            style={{ textAlign: "center", padding: "6px 4px", flex: 1 }}
+                            {...register(`questionTypes.${i}.marksPerQuestion` as const, {
+                              required: true, min: 1, valueAsNumber: true,
+                            })}
+                          />
+                          <button type="button"
+                            onClick={() => {
+                              const currentValue = watchQTypes[i]?.marksPerQuestion || 1;
+                              setValue(`questionTypes.${i}.marksPerQuestion`, currentValue + 1);
+                            }}
+                            style={{ width: 24, height: 24, borderRadius: 4, border: "1px solid var(--border)", background: "var(--surface)", cursor: "pointer", flexShrink: 0, fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center" }}
+                          >+</button>
+                        </div>
+                      </div>
                     </div>
 
-                    {/* Marks stepper */}
-                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                      <button type="button"
-                        onClick={() => {
-                          const currentValue = watchQTypes[i]?.marksPerQuestion || 1;
-                          if (currentValue > 1) {
-                            setValue(`questionTypes.${i}.marksPerQuestion`, currentValue - 1);
-                          }
-                        }}
-                        style={{ width: 28, height: 28, borderRadius: 6, border: "1px solid var(--border)", background: "var(--surface)", cursor: "pointer", flexShrink: 0, fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center" }}
-                      >−</button>
-                      <input
-                        id={`marks-${i}`}
-                        type="number"
-                        className="input"
-                        style={{ textAlign: "center", padding: "8px 4px" }}
-                        {...register(`questionTypes.${i}.marksPerQuestion` as const, {
-                          required: true, min: 1, valueAsNumber: true,
-                        })}
-                      />
-                      <button type="button"
-                        onClick={() => {
-                          const currentValue = watchQTypes[i]?.marksPerQuestion || 1;
-                          setValue(`questionTypes.${i}.marksPerQuestion`, currentValue + 1);
-                        }}
-                        style={{ width: 28, height: 28, borderRadius: 6, border: "1px solid var(--border)", background: "var(--surface)", cursor: "pointer", flexShrink: 0, fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center" }}
-                      >+</button>
-                    </div>
-
-                    {/* Remove */}
+                    {/* Remove button */}
                     {fields.length > 1 && (
                       <button type="button" onClick={() => remove(i)}
-                        style={{ width: 32, height: 32, borderRadius: 8, border: "none", background: "#ffebee", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                        <X size={14} color="#c62828" />
+                        style={{ width: "100%", height: 32, borderRadius: 6, border: "none", background: "#ffebee", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, color: "#c62828", fontWeight: 500, gap: 6 }}>
+                        <X size={14} /> Remove
                       </button>
                     )}
                   </div>
@@ -481,6 +528,32 @@ export default function CreatePage() {
                 AI will craft a comprehensive, curriculum-aligned question paper with {totalQuestions} questions worth {totalMarks} marks total.
               </p>
 
+              {/* Limit Warning */}
+              {limitInfo?.isApproachingLimit && !limitInfo?.isAtLimit && (
+                <div style={{
+                  background: "#fff3cd", border: "1px solid #ffc107", borderRadius: 8,
+                  padding: "12px 16px", marginBottom: 24, display: "flex", gap: 10, alignItems: "flex-start",
+                }}>
+                  <AlertCircle size={18} style={{ color: "#ff9800", flexShrink: 0, marginTop: 2 }} />
+                  <div style={{ textAlign: "left", fontSize: 13, color: "#856404" }}>
+                    <strong>Approaching Limit:</strong> You have {limitInfo?.remaining} assignment(s) remaining ({limitInfo?.current}/{limitInfo?.max})
+                  </div>
+                </div>
+              )}
+
+              {/* Limit Exceeded */}
+              {limitInfo?.isAtLimit && (
+                <div style={{
+                  background: "#ffebee", border: "1px solid #f44336", borderRadius: 8,
+                  padding: "12px 16px", marginBottom: 24, display: "flex", gap: 10, alignItems: "flex-start",
+                }}>
+                  <AlertCircle size={18} style={{ color: "#f44336", flexShrink: 0, marginTop: 2 }} />
+                  <div style={{ textAlign: "left", fontSize: 13, color: "#c62828" }}>
+                    <strong>Limit Reached:</strong> Maximum assignments ({limitInfo?.max}) already created. Please delete some to create more.
+                  </div>
+                </div>
+              )}
+
               {/* Summary chips */}
               <div style={{ display: "flex", flexWrap: "wrap", gap: 10, justifyContent: "center", marginBottom: 32 }}>
                 {[
@@ -501,14 +574,20 @@ export default function CreatePage() {
               <button
                 type="submit"
                 className="btn-accent"
-                disabled={isSubmitting}
-                style={{ fontSize: 15, padding: "13px 32px", width: "100%", justifyContent: "center" }}
+                disabled={isSubmitting || limitInfo?.isAtLimit}
+                style={{
+                  fontSize: 15, padding: "13px 32px", width: "100%", justifyContent: "center",
+                  opacity: limitInfo?.isAtLimit ? 0.5 : 1,
+                  cursor: limitInfo?.isAtLimit ? "not-allowed" : "pointer",
+                }}
               >
                 {isSubmitting ? (
                   <>
                     <div style={{ width: 16, height: 16, border: "2px solid rgba(255,255,255,0.3)", borderTopColor: "#fff", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
                     Creating assignment…
                   </>
+                ) : limitInfo?.isAtLimit ? (
+                  <><AlertCircle size={18} /> Limit Reached</>
                 ) : (
                   <><Sparkles size={18} /> Generate Question Paper</>
                 )}
@@ -534,10 +613,6 @@ export default function CreatePage() {
           </div>
         </form>
       </div>
-
-      <style jsx global>{`
-        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-      `}</style>
     </div>
   );
 }

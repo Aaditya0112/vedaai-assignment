@@ -20,6 +20,29 @@ router.get("/", async (_req: Request, res: Response) => {
   }
 });
 
+// GET /api/assignments/limit/status - get assignment limit info (must be before /:id)
+router.get("/limit/status", async (_req: Request, res: Response) => {
+  try {
+    const MAX_ASSIGNMENTS = parseInt(process.env.MAX_ASSIGNMENTS || "10", 10);
+    const currentCount = await Assignment.countDocuments();
+    const isAtLimit = currentCount >= MAX_ASSIGNMENTS;
+    const isApproachingLimit = currentCount >= MAX_ASSIGNMENTS - 1;
+    
+    res.json({
+      success: true,
+      data: {
+        current: currentCount,
+        max: MAX_ASSIGNMENTS,
+        isAtLimit,
+        isApproachingLimit,
+        remaining: Math.max(0, MAX_ASSIGNMENTS - currentCount),
+      },
+    });
+  } catch (err: unknown) {
+    res.status(500).json({ success: false, error: (err as Error).message });
+  }
+});
+
 // GET /api/assignments/:id - get single assignment
 router.get("/:id", async (req: Request, res: Response) => {
   try {
@@ -47,6 +70,23 @@ router.post("/", async (req: Request, res: Response) => {
       additionalInstructions,
     } = req.body;
 
+    // ─── Check Global Assignment Limit ──────────────────────────────────────
+    const MAX_ASSIGNMENTS = parseInt(process.env.MAX_ASSIGNMENTS || "10", 10);
+    const currentCount = await Assignment.countDocuments();
+    
+    if (currentCount >= MAX_ASSIGNMENTS) {
+      return res.status(400).json({
+        success: false,
+        error: `Assignment limit reached (${MAX_ASSIGNMENTS} max)`,
+        code: "LIMIT_EXCEEDED",
+        current: currentCount,
+        max: MAX_ASSIGNMENTS,
+      });
+    }
+
+    // Warn if approaching limit
+    const isApproachingLimit = currentCount >= MAX_ASSIGNMENTS - 2;
+
     // Compute totals
     const totalQuestions = questionTypes.reduce(
       (sum: number, qt: { count: number }) => sum + qt.count,
@@ -72,7 +112,13 @@ router.post("/", async (req: Request, res: Response) => {
       status: "generating",
     });
 
-    res.status(201).json({ success: true, data: assignment });
+    const response: any = { success: true, data: assignment };
+    if (isApproachingLimit) {
+      response.warning = `Approaching assignment limit (${currentCount + 1}/${MAX_ASSIGNMENTS})`;
+      response.limitInfo = { current: currentCount + 1, max: MAX_ASSIGNMENTS };
+    }
+
+    res.status(201).json(response);
 
     // ─── Trigger AI Generation (inline for now) ───────────────────────────
 
