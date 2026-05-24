@@ -50,7 +50,7 @@ ASSIGNMENT DETAILS:
 SECTIONS REQUIRED:
 ${sections}
 
-${assignment.additionalInstructions ? `ADDITIONAL INSTRUCTIONS: ${assignment.additionalInstructions}` : ""}
+${assignment.additionalInstructions ? `ADDITIONAL INSTRUCTIONS: (Consider this strictly) ${assignment.additionalInstructions}` : ""}
 
 Generate a complete, high-quality examination paper. Respond ONLY with a JSON object (no markdown, no preamble) matching this exact schema:
 
@@ -85,7 +85,7 @@ RULES:
 5. answerKey must be detailed and complete
 6. generalInstructions should have 3-5 standard exam instructions
 7. Section instructions must mention marks per question
-8. imagePrompt: For Diagram/Graph/Visual questions, provide a detailed prompt for AI image generation. For non-visual questions, use null. Example: "Chemical structure diagram of ethanol showing carbon chains and OH groups"
+8. imagePrompt: For questions which needed an image with it to understand the question completely, provide a detailed prompt for AI image generation. For non-visual questions, use null. Example: "A diagrma of Blast Furnace showing all the region with arrows pointing to each region and leave space to label them later". ALSO REMEMBER STRICTLY IF QUESTION ASKS A DIAGRAM TO BE DRAWN AS AN ANSWER, DO NOT GO FOR IMAGE GENERATION FOR THAT QUESTION.
 9. Do NOT include any text outside the JSON object
 
 `;

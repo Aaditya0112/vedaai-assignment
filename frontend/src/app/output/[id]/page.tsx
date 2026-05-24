@@ -82,7 +82,17 @@ function DifficultyBadge({ difficulty }: { difficulty: string }) {
   );
 }
 
-function PaperView({ paper, assignment }: { paper: GeneratedPaper; assignment: Assignment | null }) {
+function PaperView({
+  paper,
+  assignment,
+  setCurrentAssignment,
+  setCurrentPaper,
+}: {
+  paper: GeneratedPaper;
+  assignment: Assignment | null;
+  setCurrentAssignment: (assignment: Assignment | null) => void;
+  setCurrentPaper: (paper: GeneratedPaper | null) => void;
+}) {
   const paperRef = useRef<HTMLDivElement>(null);
   const [showAnswers, setShowAnswers] = useState(false);
   const [studentName, setStudentName] = useState("");
@@ -100,10 +110,14 @@ function PaperView({ paper, assignment }: { paper: GeneratedPaper; assignment: A
     const toastId = toast.loading("Regenerating your question paper...");
     try {
       await api.papers.regenerate(assignment._id);
-      // toast.dismiss(toastId);
+      setCurrentAssignment({ ...assignment, status: "generating" });
+      setCurrentPaper(null);
+      toast.dismiss(toastId);
+      toast.success("Regeneration started");
     } catch (err) {
-      // toast.dismiss(toastId);
+      toast.dismiss(toastId);
       toast.error("Failed to start regeneration. Please try again.");
+    } finally {
       setIsRegen(false);
     }
   };
@@ -373,6 +387,14 @@ export default function OutputPage() {
     }
   }, [progress, assignmentId, setCurrentPaper]);
 
+  useEffect(() => {
+    if (currentAssignment?.status === "completed" && currentAssignment.generatedPaperId && !currentPaper) {
+      api.papers.getByAssignment(assignmentId)
+        .then(setCurrentPaper)
+        .catch(console.error);
+    }
+  }, [assignmentId, currentAssignment, currentPaper, setCurrentPaper]);
+
   const isGenerating = currentAssignment?.status === "generating" || progress?.status === "active";
   const hasPaper = currentPaper && currentAssignment?.status === "completed";
 
@@ -411,7 +433,12 @@ export default function OutputPage() {
       {!loading && !error && isGenerating && <GeneratingView progress={progress} />}
 
       {!loading && !error && hasPaper && (
-        <PaperView paper={currentPaper!} assignment={currentAssignment} />
+        <PaperView
+          paper={currentPaper!}
+          assignment={currentAssignment}
+          setCurrentAssignment={setCurrentAssignment}
+          setCurrentPaper={setCurrentPaper}
+        />
       )}
 
       {!loading && !error && !isGenerating && !hasPaper && currentAssignment?.status === "failed" && (
