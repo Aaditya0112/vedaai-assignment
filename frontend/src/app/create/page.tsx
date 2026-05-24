@@ -153,6 +153,7 @@ export default function CreatePage() {
     try {
       const assignment = await api.assignments.create(data);
       addAssignment(assignment);
+      window.dispatchEvent(new Event("vedaai-quota-refresh"));
       // toast.dismiss(toastId);
       router.push(`/output/${assignment._id}`);
     } catch (err: any) {

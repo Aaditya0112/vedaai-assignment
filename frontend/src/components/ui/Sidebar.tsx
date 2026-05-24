@@ -32,6 +32,14 @@ export default function Sidebar() {
   const [quotaInfo, setQuotaInfo] = useState<{ used: number; max: number; remaining: number } | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
 
+  const refreshQuotaInfo = () => {
+    api.assignments.getQuotaStatus()
+      .then((data) => {
+        setQuotaInfo({ used: data.used, max: data.max, remaining: data.remaining });
+      })
+      .catch(console.error);
+  };
+
   useEffect(() => {
     api.assignments.list()
       .then((data) => {
@@ -40,12 +48,27 @@ export default function Sidebar() {
       })
       .catch(console.error);
 
-    api.assignments.getQuotaStatus()
-      .then((data) => {
-        setQuotaInfo({ used: data.used, max: data.max, remaining: data.remaining });
-      })
-      .catch(console.error);
+    refreshQuotaInfo();
   }, [setAssignments]);
+
+  useEffect(() => {
+    setAssignmentCount(assignments.length);
+  }, [assignments]);
+
+  useEffect(() => {
+    refreshQuotaInfo();
+  }, [path]);
+
+  useEffect(() => {
+    const handleQuotaRefresh = () => refreshQuotaInfo();
+    window.addEventListener("vedaai-quota-refresh", handleQuotaRefresh);
+    const intervalId = window.setInterval(refreshQuotaInfo, 15000);
+
+    return () => {
+      window.removeEventListener("vedaai-quota-refresh", handleQuotaRefresh);
+      window.clearInterval(intervalId);
+    };
+  }, []);
 
   useEffect(() => {
     const openSidebar = () => setMobileOpen(true);
