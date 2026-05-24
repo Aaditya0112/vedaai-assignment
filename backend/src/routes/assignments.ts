@@ -28,21 +28,21 @@ router.get("/quota/status", async (req: Request, res: Response) => {
     
     let globalQuota = await GlobalQuota.findOne();
     if (!globalQuota) {
-      globalQuota = await GlobalQuota.create({ totalCreations: 0 });
+      globalQuota = await GlobalQuota.create({ totalGenerations: 0 });
     }
     
-    const creationCount = globalQuota.totalCreations;
-    const isAtLimit = creationCount >= MAX_CREATIONS;
-    const isApproachingLimit = creationCount >= MAX_CREATIONS - 1;
+    const generationCount = (globalQuota.totalGenerations ?? (globalQuota as any).totalCreations ?? 0);
+    const isAtLimit = generationCount >= MAX_CREATIONS;
+    const isApproachingLimit = generationCount >= MAX_CREATIONS - 1;
     
     res.json({
       success: true,
       data: {
-        used: creationCount,
+        used: generationCount,
         max: MAX_CREATIONS,
         isAtLimit,
         isApproachingLimit,
-        remaining: Math.max(0, MAX_CREATIONS - creationCount),
+        remaining: Math.max(0, MAX_CREATIONS - generationCount),
       },
     });
   } catch (err: unknown) {
@@ -82,21 +82,23 @@ router.post("/", async (req: Request, res: Response) => {
     
     let globalQuota = await GlobalQuota.findOne();
     if (!globalQuota) {
-      globalQuota = await GlobalQuota.create({ totalCreations: 0 });
+      globalQuota = await GlobalQuota.create({ totalGenerations: 0 });
     }
+
+    const generationCount = globalQuota.totalGenerations ?? (globalQuota as any).totalCreations ?? 0;
     
-    if (globalQuota.totalCreations >= MAX_CREATIONS) {
+    if (generationCount >= MAX_CREATIONS) {
       return res.status(400).json({
         success: false,
         error: `Global creation quota exceeded (${MAX_CREATIONS} max total creations)`,
         code: "QUOTA_EXCEEDED",
-        used: globalQuota.totalCreations,
+        used: generationCount,
         max: MAX_CREATIONS,
       });
     }
 
     // Warn if approaching global limit
-    const isApproachingLimit = globalQuota.totalCreations >= MAX_CREATIONS - 1;
+    const isApproachingLimit = generationCount >= MAX_CREATIONS - 1;
 
     // Compute totals
     const totalQuestions = questionTypes.reduce(
@@ -125,14 +127,14 @@ router.post("/", async (req: Request, res: Response) => {
 
     // Increment global quota after successful creation
     await GlobalQuota.findByIdAndUpdate(globalQuota._id, {
-      $inc: { totalCreations: 1 },
+      $inc: { totalGenerations: 1 },
       lastCreatedAt: new Date(),
     });
 
     const response: any = { success: true, data: assignment };
     if (isApproachingLimit) {
-      response.warning = `Approaching global quota limit (${globalQuota.totalCreations + 1}/${MAX_CREATIONS})`;
-      response.quotaInfo = { used: globalQuota.totalCreations + 1, max: MAX_CREATIONS };
+      response.warning = `Approaching global quota limit (${generationCount + 1}/${MAX_CREATIONS})`;
+      response.quotaInfo = { used: generationCount + 1, max: MAX_CREATIONS };
     }
 
     res.status(201).json(response);

@@ -89,7 +89,7 @@ export default function CreatePage() {
   } | null>(null);
   const { addAssignment } = useAssignmentStore();
 
-  // Fetch creation quota info on mount
+  // Fetch generation quota info on mount
   useEffect(() => {
     const fetchQuotaInfo = async () => {
       try {
@@ -158,7 +158,7 @@ export default function CreatePage() {
     } catch (err: any) {
       // toast.dismiss(toastId);
       if (err.status === 400 && err.data?.code === "QUOTA_EXCEEDED") {
-        toast.error(`Creation quota exceeded (${err.data.max} max lifetime creations)`);
+        toast.error(`Generation quota exceeded (${err.data.max} max lifetime generations)`);
       } else {
         toast.error(err.message || "Failed to create assignment. Please try again.");
       }
@@ -536,7 +536,7 @@ export default function CreatePage() {
                 }}>
                   <AlertCircle size={18} style={{ color: "#ff9800", flexShrink: 0, marginTop: 2 }} />
                   <div style={{ textAlign: "left", fontSize: 13, color: "#856404" }}>
-                    <strong>Approaching Quota:</strong> You have {quotaInfo?.remaining} creation(s) remaining ({quotaInfo?.used}/{quotaInfo?.max})
+                    <strong>Approaching Quota:</strong> You have {quotaInfo?.remaining} generation(s) remaining ({quotaInfo?.used}/{quotaInfo?.max})
                   </div>
                 </div>
               )}
@@ -549,7 +549,7 @@ export default function CreatePage() {
                 }}>
                   <AlertCircle size={18} style={{ color: "#f44336", flexShrink: 0, marginTop: 2 }} />
                   <div style={{ textAlign: "left", fontSize: 13, color: "#c62828" }}>
-                    <strong>Quota Exceeded:</strong> You have reached your lifetime creation limit ({quotaInfo?.max}). Cannot create more assignments.
+                    <strong>Quota Exceeded:</strong> You have reached your lifetime generation limit ({quotaInfo?.max}). Cannot generate more papers.
                   </div>
                 </div>
               )}

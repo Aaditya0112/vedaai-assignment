@@ -182,7 +182,7 @@ export default function Sidebar() {
             </div>
             <div>
               <div style={{ color: quotaInfo.remaining === 0 ? "#c62828" : quotaInfo.remaining === 1 ? "#856404" : "#2e7d32", fontSize: 12, fontWeight: 500 }}>
-                {quotaInfo.remaining === 0 ? "Quota Full" : quotaInfo.remaining === 1 ? "Almost Full" : "Creations Left"}
+                {quotaInfo.remaining === 0 ? "Quota Full" : quotaInfo.remaining === 1 ? "Almost Full" : "Generations Left"}
               </div>
               <div style={{ color: quotaInfo.remaining === 0 ? "#e57373" : quotaInfo.remaining === 1 ? "#ffb74d" : "#81c784", fontSize: 11 }}>
                 {quotaInfo.used}/{quotaInfo.max} used

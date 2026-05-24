@@ -5,6 +5,7 @@ import { generateQuestionPaper } from "../controllers/aiController";
 import { emitJobProgress } from "../index";
 import { paperGenerationQueue } from "../workers/queues";
 import { JobRecord } from "../models/JobRecord";
+import { GlobalQuota } from "../models/CreationQuota";
 
 const router = Router();
 
@@ -42,10 +43,34 @@ router.get("/:id", async (req: Request, res: Response) => {
 // POST /api/papers/regenerate/:assignmentId
 router.post("/regenerate/:assignmentId", async (req: Request, res: Response) => {
   try {
+    const MAX_CREATIONS = parseInt(process.env.MAX_CREATIONS || "10", 10);
+    
+    let globalQuota = await GlobalQuota.findOne();
+    if (!globalQuota) {
+      globalQuota = await GlobalQuota.create({ totalGenerations: 0 });
+    }
+
+    const generationCount = globalQuota.totalGenerations ?? (globalQuota as any).totalCreations ?? 0;
+
+    if (generationCount >= MAX_CREATIONS) {
+      return res.status(400).json({
+        success: false,
+        error: `Global generation quota exceeded (${MAX_CREATIONS} max total generations)`,
+        code: "QUOTA_EXCEEDED",
+        used: generationCount,
+        max: MAX_CREATIONS,
+      });
+    }
+
     const assignment = await Assignment.findById(req.params.assignmentId);
     if (!assignment) {
       return res.status(404).json({ success: false, error: "Assignment not found" });
     }
+
+    await GlobalQuota.findByIdAndUpdate(globalQuota._id, {
+      $inc: { totalGenerations: 1 },
+      lastCreatedAt: new Date(),
+    });
 
     await Assignment.findByIdAndUpdate(assignment._id, { status: "generating" });
 

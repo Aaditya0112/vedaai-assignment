@@ -1,7 +1,7 @@
 import mongoose, { Document, Schema } from "mongoose";
 
 export interface IGlobalQuota extends Document {
-  totalCreations: number;
+  totalGenerations: number;
   lastCreatedAt: Date;
   createdAt: Date;
   updatedAt: Date;
@@ -9,7 +9,7 @@ export interface IGlobalQuota extends Document {
 
 const GlobalQuotaSchema = new Schema<IGlobalQuota>(
   {
-    totalCreations: { type: Number, required: true, default: 0, min: 0 },
+    totalGenerations: { type: Number, required: true, default: 0, min: 0 },
     lastCreatedAt: { type: Date, default: null },
   },
   {
