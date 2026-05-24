@@ -1,4 +1,3 @@
-import "../env"
 import { Queue, Worker, QueueEvents, Job } from "bullmq";
 import IORedis from "ioredis";
 import { generateQuestionPaper } from "../controllers/aiController";

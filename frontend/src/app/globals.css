@@ -96,6 +96,7 @@ body {
   margin-left: 260px;
   min-height: 100dvh;
   background: var(--surface);
+  color: #000000;
 }
 
 /* ── Cards ── */

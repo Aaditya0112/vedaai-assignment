@@ -1,6 +1,7 @@
 import { Router, Request, Response } from "express";
 import { Assignment } from "../models/Assignment";
 import { GeneratedPaper } from "../models/GeneratedPaper";
+import { GlobalQuota } from "../models/CreationQuota";
 import { generateQuestionPaper } from "../controllers/aiController";
 import { emitJobProgress } from "../index";
 import { paperGenerationQueue } from "../workers/queues";
@@ -20,22 +21,28 @@ router.get("/", async (_req: Request, res: Response) => {
   }
 });
 
-// GET /api/assignments/limit/status - get assignment limit info (must be before /:id)
-router.get("/limit/status", async (_req: Request, res: Response) => {
+// GET /api/assignments/quota/status - get global creation quota info (must be before /:id)
+router.get("/quota/status", async (req: Request, res: Response) => {
   try {
-    const MAX_ASSIGNMENTS = parseInt(process.env.MAX_ASSIGNMENTS || "10", 10);
-    const currentCount = await Assignment.countDocuments();
-    const isAtLimit = currentCount >= MAX_ASSIGNMENTS;
-    const isApproachingLimit = currentCount >= MAX_ASSIGNMENTS - 1;
+    const MAX_CREATIONS = parseInt(process.env.MAX_CREATIONS || "10", 10);
+    
+    let globalQuota = await GlobalQuota.findOne();
+    if (!globalQuota) {
+      globalQuota = await GlobalQuota.create({ totalCreations: 0 });
+    }
+    
+    const creationCount = globalQuota.totalCreations;
+    const isAtLimit = creationCount >= MAX_CREATIONS;
+    const isApproachingLimit = creationCount >= MAX_CREATIONS - 1;
     
     res.json({
       success: true,
       data: {
-        current: currentCount,
-        max: MAX_ASSIGNMENTS,
+        used: creationCount,
+        max: MAX_CREATIONS,
         isAtLimit,
         isApproachingLimit,
-        remaining: Math.max(0, MAX_ASSIGNMENTS - currentCount),
+        remaining: Math.max(0, MAX_CREATIONS - creationCount),
       },
     });
   } catch (err: unknown) {
@@ -70,22 +77,26 @@ router.post("/", async (req: Request, res: Response) => {
       additionalInstructions,
     } = req.body;
 
-    // ─── Check Global Assignment Limit ──────────────────────────────────────
-    const MAX_ASSIGNMENTS = parseInt(process.env.MAX_ASSIGNMENTS || "10", 10);
-    const currentCount = await Assignment.countDocuments();
+    // ─── Check Global Creation Quota ──────────────────────────────────────
+    const MAX_CREATIONS = parseInt(process.env.MAX_CREATIONS || "10", 10);
     
-    if (currentCount >= MAX_ASSIGNMENTS) {
+    let globalQuota = await GlobalQuota.findOne();
+    if (!globalQuota) {
+      globalQuota = await GlobalQuota.create({ totalCreations: 0 });
+    }
+    
+    if (globalQuota.totalCreations >= MAX_CREATIONS) {
       return res.status(400).json({
         success: false,
-        error: `Assignment limit reached (${MAX_ASSIGNMENTS} max)`,
-        code: "LIMIT_EXCEEDED",
-        current: currentCount,
-        max: MAX_ASSIGNMENTS,
+        error: `Global creation quota exceeded (${MAX_CREATIONS} max total creations)`,
+        code: "QUOTA_EXCEEDED",
+        used: globalQuota.totalCreations,
+        max: MAX_CREATIONS,
       });
     }
 
-    // Warn if approaching limit
-    const isApproachingLimit = currentCount >= MAX_ASSIGNMENTS - 2;
+    // Warn if approaching global limit
+    const isApproachingLimit = globalQuota.totalCreations >= MAX_CREATIONS - 1;
 
     // Compute totals
     const totalQuestions = questionTypes.reduce(
@@ -112,10 +123,16 @@ router.post("/", async (req: Request, res: Response) => {
       status: "generating",
     });
 
+    // Increment global quota after successful creation
+    await GlobalQuota.findByIdAndUpdate(globalQuota._id, {
+      $inc: { totalCreations: 1 },
+      lastCreatedAt: new Date(),
+    });
+
     const response: any = { success: true, data: assignment };
     if (isApproachingLimit) {
-      response.warning = `Approaching assignment limit (${currentCount + 1}/${MAX_ASSIGNMENTS})`;
-      response.limitInfo = { current: currentCount + 1, max: MAX_ASSIGNMENTS };
+      response.warning = `Approaching global quota limit (${globalQuota.totalCreations + 1}/${MAX_CREATIONS})`;
+      response.quotaInfo = { used: globalQuota.totalCreations + 1, max: MAX_CREATIONS };
     }
 
     res.status(201).json(response);

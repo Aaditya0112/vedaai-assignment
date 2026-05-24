@@ -23,6 +23,8 @@ export const api = {
       }),
     delete: (id: string) =>
       apiFetch<void>(`/api/assignments/${id}`, { method: "DELETE" }),
+    getQuotaStatus: () =>
+      apiFetch<{ used: number; max: number; isAtLimit: boolean; isApproachingLimit: boolean; remaining: number }>("/api/assignments/quota/status"),
   },
   papers: {
     getByAssignment: (assignmentId: string) =>

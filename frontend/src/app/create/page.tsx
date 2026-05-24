@@ -80,8 +80,8 @@ export default function CreatePage() {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [limitInfo, setLimitInfo] = useState<{
-    current: number;
+  const [quotaInfo, setQuotaInfo] = useState<{
+    used: number;
     max: number;
     isAtLimit: boolean;
     isApproachingLimit: boolean;
@@ -89,21 +89,21 @@ export default function CreatePage() {
   } | null>(null);
   const { addAssignment } = useAssignmentStore();
 
-  // Fetch assignment limit info on mount
+  // Fetch creation quota info on mount
   useEffect(() => {
-    const fetchLimitInfo = async () => {
+    const fetchQuotaInfo = async () => {
       try {
         const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
-        const response = await fetch(`${baseUrl}/api/assignments/limit/status`);
+        const response = await fetch(`${baseUrl}/api/assignments/quota/status`);
         const result = await response.json();
         if (result.success) {
-          setLimitInfo(result.data);
+          setQuotaInfo(result.data);
         }
       } catch (err) {
-        console.error("Failed to fetch limit info:", err);
+        console.error("Failed to fetch quota info:", err);
       }
     };
-    fetchLimitInfo();
+    fetchQuotaInfo();
   }, []);
 
   const {
@@ -157,8 +157,8 @@ export default function CreatePage() {
       router.push(`/output/${assignment._id}`);
     } catch (err: any) {
       // toast.dismiss(toastId);
-      if (err.status === 400 && err.data?.code === "LIMIT_EXCEEDED") {
-        toast.error(`Assignment limit reached (${err.data.max} max)`);
+      if (err.status === 400 && err.data?.code === "QUOTA_EXCEEDED") {
+        toast.error(`Creation quota exceeded (${err.data.max} max lifetime creations)`);
       } else {
         toast.error(err.message || "Failed to create assignment. Please try again.");
       }
@@ -528,28 +528,28 @@ export default function CreatePage() {
                 AI will craft a comprehensive, curriculum-aligned question paper with {totalQuestions} questions worth {totalMarks} marks total.
               </p>
 
-              {/* Limit Warning */}
-              {limitInfo?.isApproachingLimit && !limitInfo?.isAtLimit && (
+              {/* Quota Warning */}
+              {quotaInfo?.isApproachingLimit && !quotaInfo?.isAtLimit && (
                 <div style={{
                   background: "#fff3cd", border: "1px solid #ffc107", borderRadius: 8,
                   padding: "12px 16px", marginBottom: 24, display: "flex", gap: 10, alignItems: "flex-start",
                 }}>
                   <AlertCircle size={18} style={{ color: "#ff9800", flexShrink: 0, marginTop: 2 }} />
                   <div style={{ textAlign: "left", fontSize: 13, color: "#856404" }}>
-                    <strong>Approaching Limit:</strong> You have {limitInfo?.remaining} assignment(s) remaining ({limitInfo?.current}/{limitInfo?.max})
+                    <strong>Approaching Quota:</strong> You have {quotaInfo?.remaining} creation(s) remaining ({quotaInfo?.used}/{quotaInfo?.max})
                   </div>
                 </div>
               )}
 
-              {/* Limit Exceeded */}
-              {limitInfo?.isAtLimit && (
+              {/* Quota Exceeded */}
+              {quotaInfo?.isAtLimit && (
                 <div style={{
                   background: "#ffebee", border: "1px solid #f44336", borderRadius: 8,
                   padding: "12px 16px", marginBottom: 24, display: "flex", gap: 10, alignItems: "flex-start",
                 }}>
                   <AlertCircle size={18} style={{ color: "#f44336", flexShrink: 0, marginTop: 2 }} />
                   <div style={{ textAlign: "left", fontSize: 13, color: "#c62828" }}>
-                    <strong>Limit Reached:</strong> Maximum assignments ({limitInfo?.max}) already created. Please delete some to create more.
+                    <strong>Quota Exceeded:</strong> You have reached your lifetime creation limit ({quotaInfo?.max}). Cannot create more assignments.
                   </div>
                 </div>
               )}
@@ -574,11 +574,11 @@ export default function CreatePage() {
               <button
                 type="submit"
                 className="btn-accent"
-                disabled={isSubmitting || limitInfo?.isAtLimit}
+                disabled={isSubmitting || quotaInfo?.isAtLimit}
                 style={{
                   fontSize: 15, padding: "13px 32px", width: "100%", justifyContent: "center",
-                  opacity: limitInfo?.isAtLimit ? 0.5 : 1,
-                  cursor: limitInfo?.isAtLimit ? "not-allowed" : "pointer",
+                  opacity: quotaInfo?.isAtLimit ? 0.5 : 1,
+                  cursor: quotaInfo?.isAtLimit ? "not-allowed" : "pointer",
                 }}
               >
                 {isSubmitting ? (
@@ -586,8 +586,8 @@ export default function CreatePage() {
                     <div style={{ width: 16, height: 16, border: "2px solid rgba(255,255,255,0.3)", borderTopColor: "#fff", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
                     Creating assignment…
                   </>
-                ) : limitInfo?.isAtLimit ? (
-                  <><AlertCircle size={18} /> Limit Reached</>
+                ) : quotaInfo?.isAtLimit ? (
+                  <><AlertCircle size={18} /> Quota Exceeded</>
                 ) : (
                   <><Sparkles size={18} /> Generate Question Paper</>
                 )}

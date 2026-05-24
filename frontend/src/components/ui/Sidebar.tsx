@@ -29,6 +29,7 @@ export default function Sidebar() {
   const path = usePathname();
   const { assignments, setAssignments } = useAssignmentStore();
   const [assignmentCount, setAssignmentCount] = useState(0);
+  const [quotaInfo, setQuotaInfo] = useState<{ used: number; max: number; remaining: number } | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
@@ -36,6 +37,12 @@ export default function Sidebar() {
       .then((data) => {
         setAssignments(data);
         setAssignmentCount(data.length);
+      })
+      .catch(console.error);
+
+    api.assignments.getQuotaStatus()
+      .then((data) => {
+        setQuotaInfo({ used: data.used, max: data.max, remaining: data.remaining });
       })
       .catch(console.error);
   }, [setAssignments]);
@@ -152,6 +159,37 @@ export default function Sidebar() {
           <Settings size={16} />
           Settings
         </Link>
+
+        {/* Quota Info */}
+        {quotaInfo && (
+          <div style={{
+            marginTop: 12,
+            padding: "10px 12px",
+            background: quotaInfo.remaining === 0 ? "#ffebee" : quotaInfo.remaining === 1 ? "#fff3cd" : "#e8f5e9",
+            borderRadius: 10,
+            display: "flex", alignItems: "center", gap: 10,
+            border: quotaInfo.remaining === 0 ? "1px solid #ef5350" : quotaInfo.remaining === 1 ? "1px solid #ffc107" : "1px solid #66bb6a",
+          }}>
+            <div style={{
+              width: 32, height: 32, borderRadius: 8,
+              background: quotaInfo.remaining === 0 ? "#ef5350" : quotaInfo.remaining === 1 ? "#ffc107" : "#66bb6a",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              flexShrink: 0,
+              color: quotaInfo.remaining === 1 ? "#000" : "#fff",
+              fontSize: 11, fontWeight: 700,
+            }}>
+              {quotaInfo.remaining}
+            </div>
+            <div>
+              <div style={{ color: quotaInfo.remaining === 0 ? "#c62828" : quotaInfo.remaining === 1 ? "#856404" : "#2e7d32", fontSize: 12, fontWeight: 500 }}>
+                {quotaInfo.remaining === 0 ? "Quota Full" : quotaInfo.remaining === 1 ? "Almost Full" : "Creations Left"}
+              </div>
+              <div style={{ color: quotaInfo.remaining === 0 ? "#e57373" : quotaInfo.remaining === 1 ? "#ffb74d" : "#81c784", fontSize: 11 }}>
+                {quotaInfo.used}/{quotaInfo.max} used
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* School info */}
         <div style={{
