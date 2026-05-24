@@ -173,6 +173,7 @@ export default function CreatePage() {
       <div style={{
         background: "#fff", borderBottom: "1px solid var(--border)",
         padding: "16px 32px", display: "flex", alignItems: "center", gap: 16,
+        margin : "8px 12px", borderRadius: 12,
         position: "sticky", top: 0, zIndex: 30,
       }}>
         <button onClick={() => router.back()} className="btn-ghost" style={{ padding: "7px 12px" }}>

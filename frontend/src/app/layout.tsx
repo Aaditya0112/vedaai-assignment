@@ -7,8 +7,8 @@ export const metadata: Metadata = {
   title: "VedaAI – AI Assessment Creator",
   description: "Create intelligent, curriculum-aligned exam papers in seconds",
   icons: {
-    icon: "/logo.avif",
-    apple: "/logo.avif",
+    icon: "/favicon.png",
+    apple: "/favicon.png",
   },
 };
 

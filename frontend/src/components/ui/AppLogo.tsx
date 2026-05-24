@@ -41,7 +41,7 @@ export default function AppLogo({
           <GraduationCap size={Math.max(16, Math.floor(size * 0.55))} color="#fff" />
         ) : (
           <Image
-            src="/logo.avif"
+            src="/favicon.png"
             alt="VedaAI logo"
             width={size}
             height={size}

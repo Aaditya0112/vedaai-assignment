@@ -12,18 +12,24 @@ import {
 import { GeneratedPaper } from "@/types";
 import { parseQuestionText } from "@/lib/parseQuestion";
 
-const BASE_URL = typeof window !== "undefined" 
-  ? window.location.origin 
-  : "https://vedaai-assignment-iota.vercel.app";
+let fontsRegistered = false;
 
-Font.register({
-  family: "NotoSerif",
-  fonts: [
-    { src: `${BASE_URL}/fonts/NotoSerif-Regular.ttf`, fontWeight: "normal" },
-    { src: `${BASE_URL}/fonts/NotoSerif-Bold.ttf`, fontWeight: "bold" },
-    { src: `${BASE_URL}/fonts/NotoSerif-Italic.ttf`, fontWeight: "normal", fontStyle: "italic" },
-  ],
-});
+function registerFonts() {
+  if (fontsRegistered) return;
+  const base = typeof window !== "undefined"
+    ? window.location.origin
+    : "https://vedaai-assignment-iota.vercel.app";
+
+  Font.register({
+    family: "NotoSerif",
+    fonts: [
+      { src: `${base}/fonts/NotoSerif-Regular.ttf`, fontWeight: "normal" },
+      { src: `${base}/fonts/NotoSerif-Bold.ttf`, fontWeight: "bold" },
+      { src: `${base}/fonts/NotoSerif-Italic.ttf`, fontWeight: "normal", fontStyle: "italic" },
+    ],
+  });
+  fontsRegistered = true;
+}
 
 const styles = StyleSheet.create({
   page: {
@@ -86,6 +92,7 @@ const difficultyColor: Record<string, string> = {
 };
 
 export function ExamPaperPDF({ paper }: { paper: GeneratedPaper }) {
+  registerFonts();
   return (
     <Document
       title={`${paper.subject} - ${paper.className}`}
