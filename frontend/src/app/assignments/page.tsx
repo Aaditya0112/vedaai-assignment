@@ -156,8 +156,7 @@ export default function AssignmentsPage() {
 
   return (
     <div style={{ minHeight: "100dvh", background: "var(--surface)" }}>
-      {/* Floating Header with Back Arrow and Current Selection */}
-      <div className="floating-page-header" style={{
+      <div className="assignments-floating-header floating-page-header" style={{
         position: "fixed", top: 0, left: 260, right: 0,
         background: "rgba(255, 255, 255, 0.8)",
         backdropFilter: "blur(12px)",
@@ -182,23 +181,10 @@ export default function AssignmentsPage() {
           <ClipboardList size={16} />
           Assignments
         </div>
-        <button
-          type="button"
-          className="mobile-drawer-trigger"
-          onClick={() => window.dispatchEvent(new Event("vedaai-open-sidebar"))}
-          style={{
-            marginLeft: "auto", width: 36, height: 36, borderRadius: 10, border: "1px solid var(--border)",
-            background: "#fff", display: "none", alignItems: "center", justifyContent: "center",
-            cursor: "pointer", color: "var(--ink)",
-          }}
-          aria-label="Open navigation menu"
-        >
-          <Menu size={18} />
-        </button>
       </div>
 
       {/* Header Content (below floating header) */}
-      <div style={{
+      <div className="assignments-page-intro" style={{
         background: "var(--surface)", padding: "80px 32px 20px", maxWidth: 1200, margin: "0 auto",
       }}>
         <p style={{ fontSize: 12, color: "var(--slate-light)", marginBottom: 2 }}>
@@ -209,7 +195,7 @@ export default function AssignmentsPage() {
         </h1>
       </div>
 
-      <div style={{ padding: "0px 32px 40px", maxWidth: 1200, margin: "0 auto" }}>
+      <div className="assignments-page-body" style={{ padding: "0px 32px 40px", maxWidth: 1200, margin: "0 auto" }}>
         {/* Search + Filter */}
         <div style={{ display: "flex", gap: 12, marginBottom: 24 }}>
           <div style={{ position: "relative", flex: 1 }}>

@@ -12,12 +12,16 @@ import {
 import { GeneratedPaper } from "@/types";
 import { parseQuestionText } from "@/lib/parseQuestion";
 
+const BASE_URL = typeof window !== "undefined" 
+  ? window.location.origin 
+  : "https://vedaai-assignment-iota.vercel.app";
+
 Font.register({
   family: "NotoSerif",
   fonts: [
-    { src: "/fonts/NotoSerif-Regular.ttf", fontWeight: "normal" },
-    { src: "/fonts/NotoSerif-Bold.ttf", fontWeight: "bold" },
-    { src: "/fonts/NotoSerif-Italic.ttf", fontWeight: "normal", fontStyle: "italic" },
+    { src: `${BASE_URL}/fonts/NotoSerif-Regular.ttf`, fontWeight: "normal" },
+    { src: `${BASE_URL}/fonts/NotoSerif-Bold.ttf`, fontWeight: "bold" },
+    { src: `${BASE_URL}/fonts/NotoSerif-Italic.ttf`, fontWeight: "normal", fontStyle: "italic" },
   ],
 });
 

@@ -9,13 +9,14 @@ import {
   Sparkles,
   BookOpen,
   Settings,
-  GraduationCap,
   Plus,
   Book,
+  Menu,
   X,
 } from "lucide-react";
 import { useAssignmentStore } from "@/store/assignmentStore";
 import { api } from "@/lib/api";
+import AppLogo from "@/components/ui/AppLogo";
 
 const NAV_ITEMS = [
   { href: "/", label: "Home", icon: LayoutGrid },
@@ -99,55 +100,52 @@ export default function Sidebar() {
 
   return (
     <>
+      <div className="mobile-app-header">
+        <AppLogo href="/" size={30} textSize={20} />
+        <button
+          type="button"
+          className="mobile-drawer-trigger"
+          onClick={() => setMobileOpen(true)}
+          aria-label="Open navigation menu"
+        >
+          <Menu size={18} />
+        </button>
+      </div>
+
       <div
         className={`sidebar-backdrop ${mobileOpen ? "open" : ""}`}
         onClick={() => setMobileOpen(false)}
       />
 
       <aside className={`sidebar ${mobileOpen ? "open" : ""}`}>
-      {/* Logo */}
-      <div style={{ padding: "40px 20px 16px", position: "relative" }}>
-        <Link href="/" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
-          <div style={{
-            width: 34, height: 34, borderRadius: 10,
-            background: "linear-gradient(135deg, #e8632a 0%, #f2845a 100%)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            flexShrink: 0,
-          }}>
-            <GraduationCap size={18} color="#fff" />
-          </div>
-          <span style={{
-            color: "#000000", fontFamily: "var(--font-body)",
-            fontSize: 24, fontWeight: 800, letterSpacing: "-0.01em",
-          }}>
-            VedaAI
-          </span>
-        </Link>
+        {/* Logo */}
+        <div style={{ padding: "40px 20px 16px", position: "relative" }}>
+          <AppLogo href="/" />
 
-        <button
-          type="button"
-          className="sidebar-mobile-close"
-          onClick={() => setMobileOpen(false)}
-          aria-label="Close navigation menu"
-          style={{
-            position: "absolute",
-            right: 16,
-            top: 16,
-            width: 36,
-            height: 36,
-            borderRadius: 10,
-            border: "1px solid var(--border)",
-            background: "#fff",
-            display: "none",
-            alignItems: "center",
-            justifyContent: "center",
-            cursor: "pointer",
-            color: "var(--ink)",
-          }}
-        >
-          <X size={16} />
-        </button>
-      </div>
+          <button
+            type="button"
+            className="sidebar-mobile-close"
+            onClick={() => setMobileOpen(false)}
+            aria-label="Close navigation menu"
+            style={{
+              position: "absolute",
+              right: 16,
+              top: 16,
+              width: 36,
+              height: 36,
+              borderRadius: 10,
+              border: "1px solid var(--border)",
+              background: "#fff",
+              display: "none",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer",
+              color: "var(--ink)",
+            }}
+          >
+            <X size={16} />
+          </button>
+        </div>
 
       {/* Create Assignment CTA */}
       <div style={{ padding: "0 16px 20px" }}>
