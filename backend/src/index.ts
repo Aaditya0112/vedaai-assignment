@@ -32,7 +32,6 @@ const httpServer = createServer(app);
 // ─── CORS Configuration ────────────────────────────────────────────────────
 const corsOptions = {
   origin: process.env.FRONTEND_URL || "http://localhost:3000",
-  credentials: true, 
 };
 
 // ─── WebSocket Setup ────────────────────────────────────────────────────────
