@@ -44,7 +44,7 @@ const styles = StyleSheet.create({
     marginBottom: 14,
     textAlign: "center",
   },
-  schoolName: { fontSize: 16, fontFamily: "Times-Bold", marginBottom: 4 },
+  schoolName: { fontSize: 16, fontFamily: "NotoSerif", marginBottom: 4 },
   metaRow: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -59,9 +59,9 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     marginTop: 20,
   },
-  sectionTitle: { fontSize: 12, fontFamily: "Times-Bold" },
+  sectionTitle: { fontSize: 12, fontFamily: "NotoSerif" },
   questionRow: { flexDirection: "row", marginBottom: 12 },
-  questionNum: { width: 20, fontFamily: "Times-Bold", fontSize: 11 },
+  questionNum: { width: 20, fontFamily: "NotoSerif", fontSize: 11 },
   questionText: { flex: 1, lineHeight: 1.6 },
   marksText: { width: 50, textAlign: "right", fontSize: 10 },
   badge: { fontSize: 8, padding: "2pt 6pt", borderRadius: 4 },
@@ -78,7 +78,7 @@ const styles = StyleSheet.create({
     paddingRight: 8,
   },
   optionLabel: {
-    fontFamily: "Times-Bold",
+    fontFamily: "NotoSerif",
     marginRight: 4,
     minWidth: 16,
   },
@@ -134,7 +134,7 @@ export function ExamPaperPDF({ paper }: { paper: GeneratedPaper }) {
               backgroundColor: "#f9f9f9",
             }}
           >
-            <Text style={{ fontFamily: "Times-Bold", marginBottom: 4 }}>
+            <Text style={{ fontFamily: "NotoSerif", marginBottom: 4 }}>
               General Instructions:
             </Text>
             {paper.generalInstructions.map((inst, i) => (
@@ -189,7 +189,7 @@ export function ExamPaperPDF({ paper }: { paper: GeneratedPaper }) {
                       </Text>
                       <View style={{ alignItems: "flex-end", marginLeft: 8 }}>
                         <Text
-                          style={{ fontSize: 10, fontFamily: "Times-Bold" }}
+                          style={{ fontSize: 10, fontFamily: "NotoSerif" }}
                         >
                           [{q.marks}M]
                         </Text>
@@ -251,7 +251,7 @@ export function ExamPaperPDF({ paper }: { paper: GeneratedPaper }) {
           }}
         >
           <Text
-            style={{ fontSize: 11, fontFamily: "Times-Bold", letterSpacing: 2 }}
+            style={{ fontSize: 11, fontFamily: "NotoSerif", letterSpacing: 2 }}
           >
             — END OF QUESTION PAPER —
           </Text>

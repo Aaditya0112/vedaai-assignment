@@ -5,25 +5,39 @@ export interface ParsedQuestion {
 }
 
 export function parseQuestionText(text: string): ParsedQuestion {
-  // Match (A) (B) (C) (D) or (a) (b) (c) (d)
-  const optionRegex = /\(([A-Da-d])\)\s*([^(]+?)(?=\s*\([A-Da-d]\)|$)/g;
-  const options: { label: string; text: string }[] = [];
+  // Split on option markers (A) (B) (C) (D) at word boundaries
+  // Handles options containing brackets, symbols, math expressions
+  const optionMarkerRegex = /\(\s*([A-Da-d])\s*\)/g;
+  
+  const markers: { label: string; index: number }[] = [];
   let match;
 
-  while ((match = optionRegex.exec(text)) !== null) {
-    options.push({
-      label: match[1].toUpperCase(),
-      text: match[2].trim(),
-    });
+  while ((match = optionMarkerRegex.exec(text)) !== null) {
+    markers.push({ label: match[1].toUpperCase(), index: match.index });
   }
 
-  if (options.length < 2) {
+  // Need at least 2 markers to be MCQ
+  if (markers.length < 2) {
+    return { stem: text, options: null, isMCQ: false };
+  }
+
+  // First marker must be A or a
+  if (markers[0].label !== "A") {
     return { stem: text, options: null, isMCQ: false };
   }
 
   // Extract stem — everything before first (A)
-  const firstOptionIndex = text.search(/\([A-Da-d]\)/);
-  const stem = text.slice(0, firstOptionIndex).trim();
+  const stem = text.slice(0, markers[0].index).trim();
+
+  // Extract each option text — from after its marker to before next marker
+  const options: { label: string; text: string }[] = markers.map((marker, i) => {
+    const start = marker.index + text.slice(marker.index).indexOf(")") + 1;
+    const end = i + 1 < markers.length ? markers[i + 1].index : text.length;
+    return {
+      label: marker.label,
+      text: text.slice(start, end).trim(),
+    };
+  });
 
   return { stem, options, isMCQ: true };
 }

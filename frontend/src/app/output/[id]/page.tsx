@@ -244,7 +244,8 @@ function PaperView({
           background: "#fff",
           borderBottom: "1px solid var(--border)",
           padding: "12px 32px",
-          margin : "8px 12px", borderRadius: 12,
+          margin: "8px 12px",
+          borderRadius: 12,
           display: "flex",
           alignItems: "center",
           gap: 12,
@@ -608,7 +609,14 @@ function PaperView({
                             </p> */}
 
                                       {(() => {
-                                        const parsed = question.type === "MCQ" ? parseQuestionText(question.text) : { stem: question.text, options: null, isMCQ: false };
+                                        const parsed =
+                                          question.type === "MCQ"
+                                            ? parseQuestionText(question.text)
+                                            : {
+                                                stem: question.text,
+                                                options: null,
+                                                isMCQ: false,
+                                              };
                                         return (
                                           <>
                                             <p
@@ -625,13 +633,9 @@ function PaperView({
                                                   display: "grid",
                                                   gridTemplateColumns:
                                                     "1fr 1fr",
-                                                  gap: "6px 16px",
-                                                  marginTop: 10,
-                                                  padding: "10px 14px",
-                                                  background: "var(--surface)",
-                                                  borderRadius: 8,
-                                                  border:
-                                                    "1px solid var(--border)",
+                                                  gap: "4px 24px",
+                                                  marginTop: 8,
+                                                  paddingLeft: 4,
                                                 }}
                                               >
                                                 {parsed.options.map((opt) => (
@@ -639,14 +643,14 @@ function PaperView({
                                                     key={opt.label}
                                                     style={{
                                                       display: "flex",
-                                                      gap: 8,
+                                                      gap: 6,
                                                       fontSize: 13,
+                                                      lineHeight: 1.6,
                                                     }}
                                                   >
                                                     <span
                                                       style={{
-                                                        fontWeight: 700,
-                                                        color: "var(--accent)",
+                                                        fontWeight: 600,
                                                         minWidth: 20,
                                                       }}
                                                     >
@@ -908,7 +912,8 @@ export default function OutputPage() {
           background: "#fff",
           borderBottom: "1px solid var(--border)",
           padding: "16px 32px",
-          margin : "8px 12px", borderRadius: 12,
+          margin: "8px 12px",
+          borderRadius: 12,
           display: "flex",
           alignItems: "center",
           gap: 16,
