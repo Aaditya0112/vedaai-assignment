@@ -11,6 +11,7 @@ import { useAssignmentStore } from "@/store/assignmentStore";
 import { api } from "@/lib/api";
 import { Assignment } from "@/types";
 import { format } from "date-fns";
+import { toast } from "react-hot-toast";
 
 const statusConfig: Record<string, { label: string; color: string; icon: React.ElementType; bg: string }> = {
   draft: { label: "Draft", color: "#4a5568", icon: FileText, bg: "#f7f7f7" },
@@ -135,12 +136,35 @@ export default function AssignmentsPage() {
   const [search, setSearch] = useState("");
   const pageRouter = useRouter();
 
+
   useEffect(() => {
-    setLoading(true);
-    api.assignments.list()
-      .then(setAssignments)
-      .catch(console.error)
-      .finally(() => setLoading(false));
+    let retryCount = 0;
+    const maxRetries = 3;
+
+    const fetchAssignments = async () => {
+      setLoading(true);
+      try {
+        const data = await api.assignments.list();
+        setAssignments(data);
+      } catch (err) {
+        if (retryCount < maxRetries) {
+          retryCount++;
+          console.log(`[Retry] Attempt ${retryCount} in 3 seconds...`);
+          setTimeout(fetchAssignments, 3000); // retry after 3s
+        } else {
+          console.error("Failed to fetch assignments after multiple attempts:", err);
+          toast.error("Failed to load assignments. Please try again.");
+          setAssignments([]);
+          setLoading(false);
+        }
+      } finally {
+        if (retryCount === 0 || retryCount > maxRetries) {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchAssignments();
   }, [setAssignments, setLoading]);
 
   const filtered = assignments.filter(

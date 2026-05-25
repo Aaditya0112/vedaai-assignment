@@ -838,6 +838,7 @@ export default function OutputPage() {
         }
       } catch (err) {
         setError((err as Error).message);
+        toast.error("Failed to load the assignment output.")
       } finally {
         setLoading(false);
       }
