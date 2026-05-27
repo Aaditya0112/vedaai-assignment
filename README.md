@@ -114,7 +114,7 @@ vedaai/
 ### Prerequisites
 - Node.js 18+
 - MongoDB (local or Atlas)
-- Anthropic API key
+- OpenAI API key
 
 ### Backend
 
@@ -138,6 +138,36 @@ npm run dev
 ```
 
 ---
+## ☁️ Deployment
+
+### Frontend (Vercel)
+
+1. Import the `frontend` folder as a new Vercel project.
+2. Set build settings:
+    - Framework Preset: `Next.js`
+    - Root Directory: `frontend`
+3. Add environment variables in Vercel:
+    - `NEXT_PUBLIC_API_URL=https://<your-railway-backend-domain>`
+4. Deploy and confirm the site is live.
+
+### Backend (Railway)
+
+1. Create a new Railway service from the `backend` folder.
+2. Configure service settings:
+    - Root Directory: `backend`
+    - Start Command: `npm run start`
+    - Build Command: `npm install && npm run build`
+3. Add backend environment variables from your local `.env` / `.env.example` (MongoDB URI, AI keys, Cloudinary config, etc.).
+4. Deploy and copy the generated Railway public domain.
+
+### Connect both
+
+1. Paste Railway domain into Vercel env:
+    - `NEXT_PUBLIC_API_URL=https://<your-railway-backend-domain>`
+2. Ensure backend CORS allows your Vercel domain.
+3. Redeploy frontend after env updates.
+
+---
 
 ## 🧠 AI Approach
 
@@ -145,7 +175,7 @@ npm run dev
 - **Output format**: AI instructed to return strict JSON only — no markdown fences, no preamble
 - **Parsing**: response is cleaned of any accidental fencing, then JSON.parsed and validated
 - **Image Gen**: Image generation is done for required questions.
-- **Cloudniary upload**: Generated image is uploade on cloudinary and accessed via url
+- **Cloudinary upload**: Generated image is uploaded on cloudinary and accessed via url
 - **Never rendered raw**: LLM output is mapped to typed `IGeneratedPaper` schema before any display
 
 ---

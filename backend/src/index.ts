@@ -8,7 +8,7 @@ import path from "path";
 import assignmentRoutes from "./routes/assignments";
 import paperRoutes from "./routes/papers";
 import { initQueues } from "./workers/queues";
-import { connection } from "./workers/queues";
+// import { connection } from "./workers/queues";
 
 
 // Load environment variables from .env file
@@ -85,14 +85,13 @@ app.use("/api/assignments", assignmentRoutes);
 app.use("/api/papers", paperRoutes);
 
 app.get("/api/health", async (_req, res) => {
-  const redisStatus = connection.status;
   res.json({
     status: "ok",
     timestamp: new Date().toISOString(),
     mongo: mongoose.connection.readyState === 1 ? "connected" : "disconnected",
-    redis: redisStatus === "ready" ? "connected" : redisStatus,
+    redis: process.env.REDIS_HOST ? "configured" : "not configured",
   });
-})
+});
 
 // ─── MongoDB ─────────────────────────────────────────────────────────────────
 const connectDB = async () => {

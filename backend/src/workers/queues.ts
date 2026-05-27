@@ -1,22 +1,22 @@
 import { Queue, Worker, QueueEvents, Job } from "bullmq";
-import IORedis from "ioredis";
+// import IORedis from "ioredis";
 import { generateQuestionPaper } from "../controllers/aiController";
 import { Assignment } from "../models/Assignment";
 import { JobRecord } from "../models/JobRecord";
 import { emitJobProgress } from "../index";
-
+import { ConnectionOptions } from "bullmq";
 
 // ─── Redis Connection ─────────────────────────────────────────────────────────
-export const connection = new IORedis({
+export const connection : ConnectionOptions = {
   host: process.env.REDIS_HOST,
   port: Number(process.env.REDIS_PORT) || 6379,
   password: process.env.REDIS_PASSWORD || undefined,
   tls: process.env.REDIS_TLS === "true" ? {} : undefined,
   maxRetriesPerRequest: null, // required by BullMQ
-});
+};
 
-connection.on("connect", () => console.log("[Redis] Connected"));
-connection.on("error", (err : Error) => console.error("[Redis] Error:", err.message));
+// connection.on("connect", () => console.log("[Redis] Connected"));
+// connection.on("error", (err : Error) => console.error("[Redis] Error:", err.message));
 
 // ─── Queue Definitions ────────────────────────────────────────────────────────
 export const paperGenerationQueue = new Queue("paper-generation", {
